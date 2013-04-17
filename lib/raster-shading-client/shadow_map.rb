@@ -33,7 +33,7 @@ class RasterShadingClient::ShadowMap
           id: cid
         }).run
     return cid if response.code == 202
-    return "FAIL #{response.inspect}"
+    return false
   end
 
   def self.get_shadow_map_uri
