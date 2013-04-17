@@ -17,10 +17,10 @@ Jeweler::Tasks.new do |gem|
   gem.name = "raster-shading-client"
   gem.homepage = "http://github.com/tailic/raster-shading-client"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Cleint gem for sunyside raster-shading-serice}
+  gem.description = %Q{Cleint gem for sunyside raster-shading-serice}
   gem.email = "niklas@derschreiber.com"
-  gem.authors = ["niklas"]
+  gem.authors = ["Niklas Schreiber"]
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
