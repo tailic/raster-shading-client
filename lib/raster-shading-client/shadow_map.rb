@@ -2,60 +2,57 @@ class RasterShadingClient::ShadowMap
   include ActiveModel::Serializers::JSON
   include ActiveModel::Validations
 
-  attr_accessor :solarpositions, :lat, :lng, :datetime
+  attr_accessor :azimuth, :zenith, :bounding_box, :svg
 
   def initialize(attributes = {})
     if attributes
       attributes.each do |name, value|
-        if name == 'solarpositions'
-          value = parse_solar_positions(value)
-        end
         send("#{name}=", value)
       end
     end
   end
 
-  def parse_solar_positions(solarpositions)
-    positions = []
-    solarpositions.each do |position|
-      positions << SolarInformationClient::SolarPosition.new(position['solar_position'])
-    end
-    positions
-  end
 
   def attributes
     {
-        'solarpositions' => solarpositions,
-        'lat' => lat,
-        'lng' => lng,
-        'datetime' => datetime
+        'azimuth' => azimuth,
+        'zenith' => zenith,
+        'bounding_box' => bounding_box,
+        'svg' => svg
     }
   end
 
-  def current_position
-    t = Time.iso8601(datetime).getlocal
-    hour = t.min > 30 ? t.hour + 1 : t.hour
-    current = solarpositions.find { |position| position.hour == hour}
-    return solarpositions.first if current.nil?
-    current
-  end
-
-  def self.get_solar_day(lat, lng, datetime)
+  def self.get_shadow_map(azimuth, zenith, bounding_box, callback_id)
     response = Typhoeus::Request.new(
-        get_solar_day_uri,
+        get_shadow_map_uri,
         params: {
-            lat: lat,
-            lng: lng,
-            datetime: datetime
+          azimuth: azimuth,
+          zenith: 90 - zenith,
+          bbox: bounding_box,
+          id: callback_id
         }).run
+    puts response.inspect
 
     json = Yajl::Parser.parse(response.body)
-    new(json['solar_day'])
+    new(json['shadow_map'])
   end
 
-  def self.get_solar_day_uri
-    "http://#{SolarInformationClient::Config.host}/api/v1/solarposition/day"
+  def self.get_shadow_map_uri
+    "http://#{RasterShadingClient::Config.host}/api/v1/rastershading"
   end
 
 
+end
+
+
+def shadow(current, bounding_box, req_id)
+  response_shader = Typhoeus::Request.new(
+      uri,
+      params: {
+          azimuth: current.azimuth,
+          zenith: 90 - current.zenith,
+          bbox: bounding_box,
+          id: req_id
+      }
+  ).run
 end
