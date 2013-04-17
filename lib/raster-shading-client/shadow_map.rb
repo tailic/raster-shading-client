@@ -22,37 +22,30 @@ class RasterShadingClient::ShadowMap
     }
   end
 
-  def self.get_shadow_map(azimuth, zenith, bounding_box, callback_id)
+  def self.get_shadow_map(azimuth, zenith, bounding_box, datetime)
+    cid = callback_id(bounding_box, datetime)
     response = Typhoeus::Request.new(
         get_shadow_map_uri,
         params: {
           azimuth: azimuth,
           zenith: 90 - zenith,
           bbox: bounding_box,
-          id: callback_id
+          id: cid
         }).run
-    puts response.inspect
-
-    json = Yajl::Parser.parse(response.body)
-    new(json['shadow_map'])
+    return cid if response.code == 202
+    return false
   end
 
   def self.get_shadow_map_uri
     "http://#{RasterShadingClient::Config.host}/api/v1/rastershading"
   end
 
+  def self.callback_id(bbox, datetime)
+    u_box = bbox.sub(',','')
+    t = Time.new(datetime).getlocal
+    u_time = "#{t.year}#{t.month}#{t.day}#{t.hour}"
+    u_box + u_time
+  end
 
-end
 
-
-def shadow(current, bounding_box, req_id)
-  response_shader = Typhoeus::Request.new(
-      uri,
-      params: {
-          azimuth: current.azimuth,
-          zenith: 90 - current.zenith,
-          bbox: bounding_box,
-          id: req_id
-      }
-  ).run
 end

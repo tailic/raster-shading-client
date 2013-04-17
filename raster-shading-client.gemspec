@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
     "lib/raster-shading-client/config.rb",
     "lib/raster-shading-client/shadow_map.rb",
     "lib/raster-shading-client/version.rb",
+    "raster-shading-client.gemspec",
     "spec/raster-shading-client_spec.rb",
     "spec/spec_helper.rb"
   ]
