@@ -23,7 +23,7 @@ class RasterShadingClient::ShadowMap
   end
 
   def self.get_shadow_map(azimuth, zenith, bounding_box, datetime)
-    cid = callback_id(bounding_box, datetime)
+    cid = callback_id(bounding_box, azimuth, zenith)
     response = Typhoeus::Request.new(
         get_shadow_map_uri,
         params: {
@@ -40,11 +40,8 @@ class RasterShadingClient::ShadowMap
     "http://#{RasterShadingClient::Config.host}/api/v1/rastershading"
   end
 
-  def self.callback_id(bbox, datetime)
-    u_box = bbox.sub(',','')
-    t = Time.new(datetime).getlocal
-    u_time = "#{t.year}#{t.month}#{t.day}#{t.hour}"
-    u_box + u_time
+  def self.callback_id(bbox, azimuth, zenith)
+    "#{bbox.sub(',','')}#{azimuth}#{zenith}"
   end
 
 
