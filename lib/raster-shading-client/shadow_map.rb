@@ -2,7 +2,7 @@ class RasterShadingClient::ShadowMap
   include ActiveModel::Serializers::JSON
   include ActiveModel::Validations
 
-  attr_accessor :azimuth, :zenith, :bounding_box, :svg
+  attr_accessor :status, :errors, :callback_id, :callback_url
 
   def initialize(attributes = {})
     if attributes
@@ -15,10 +15,10 @@ class RasterShadingClient::ShadowMap
 
   def attributes
     {
-        'azimuth' => azimuth,
-        'zenith' => zenith,
-        'bounding_box' => bounding_box,
-        'svg' => svg
+        'status' => status,
+        'errors' => errors,
+        'callback_id' => callback_id,
+        'callback_url' => callback_url
     }
   end
 
@@ -32,8 +32,26 @@ class RasterShadingClient::ShadowMap
           bbox: bounding_box,
           id: cid
         }).run
-    return cid if response.code == 202
-    return false
+
+    handle_response(response)
+  end
+
+  def self.handle_response(response)
+    json = Yajl::Parser.parse(response.body)
+    if response.code == 202
+      result = json
+    elsif response.timed_out?
+      result = { status: 'REQUEST_TIMEOUT', errors: {} }
+    elsif response.code == 0
+      result = { status: 'REQUEST_NO_RESPONSE', errors: { curl: response.curl_error_message } }
+    elsif response.code == 400
+      result = json
+    elsif response.code == 500
+      result = json
+    else
+      result = { status: 'REQUEST_FAILES', errors: { curl: response.code.to_s } }
+    end
+    new(result)
   end
 
   def self.get_shadow_map_uri
